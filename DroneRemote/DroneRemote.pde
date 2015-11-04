@@ -1,0 +1,49 @@
+import processing.serial.*;
+
+Serial serialPort;
+int pitch;
+int roll;
+int throttle;
+
+void setup() {
+  size(800, 400);
+  
+  pitch = 0;
+  roll = 0;
+  throttle = 0;
+  
+  println("Available serial ports:");
+
+  serialPort = new Serial(this, "/dev/tty.usbserial-AL016UPG", 9600);
+}
+
+void draw() {
+  //This code is drawing our control grid
+  for (int i = 400; i < 800; i += 50) {
+    if (i == 600) {
+        stroke(100);
+      } else {
+        stroke(230);
+      }
+   line(i, 0, i, 400);
+   int ix = i - 400;
+   line(400, ix, 800, ix);
+  }
+  
+}
+
+void serialEvent(Serial p) { 
+  print(p.readChar()); 
+} 
+
+void keyPressed() {
+  if (!(key == 'a' || key == 'w')) return;
+  if (key == 'a' && throttle > 0) {
+    throttle -= 1;
+  } else if (key == 'w' && throttle <= 2000) {
+    throttle += 1;
+  }
+  String serialString = "0,0,0," + throttle + "\n";
+  serialPort.write(serialString);
+  //print(serialString);
+}
