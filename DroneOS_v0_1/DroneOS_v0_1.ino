@@ -11,7 +11,12 @@ int yaw;          //central rotation around core
 int throttle;     //overall thrust distributed to rotors
 
 //---- MATH VARs --------------------
-#define baseNumber 1000
+#define BASE_NUMBER_MIN 0
+#define BASE_NUMBER_MAX 2000
+
+#define MICROS_NUMBER_MIN 1110
+#define MICROS_NUMBER_MAX 1900
+
 #define stabilisationSensitivity 1 //CHANGE !
 
 //---- SENSOR VARs ------------------
@@ -74,7 +79,10 @@ void loop() {
     readyMessageSent = true;
   }
   while (Serial1.available() > 0) {
-    int integer1 = Serial1.parseInt(); int integer2 = Serial1.parseInt(); int integer3 = Serial1.parseInt(); int integer4 = Serial1.parseInt();
+    int integer1 = Serial1.parseInt(); 
+    int integer2 = Serial1.parseInt(); 
+    int integer3 = Serial1.parseInt(); 
+    int integer4 = Serial1.parseInt();
     if (Serial1.read() == '\n') {
       pitch = integer1;
       roll = integer2;
@@ -82,17 +90,24 @@ void loop() {
       throttle = integer4;
     }
   }
-}
 
-void serialEvent2(){
-  //read SENSOR comm buffer
+  motor1.writeMicroseconds(calculateThrustForRotor(1));
+  motor2.writeMicroseconds(calculateThrustForRotor(2));
+  motor3.writeMicroseconds(calculateThrustForRotor(3));
+  motor4.writeMicroseconds(calculateThrustForRotor(4));
 }
 
 int calculateThrustForRotor(int motor) {
   if (motor == 1 || 3) {
     // affected by ROLL rotation
+    int baseNumber = throttle + roll;
+    int microsToWrite = map(baseNumber, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+    return microsToWrite;
   } else {
     // affected by PITCH rotation
+    int baseNumber = throttle + pitch;
+    int microsToWrite = map(baseNumber, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+    return microsToWrite;
   }
 }
 
