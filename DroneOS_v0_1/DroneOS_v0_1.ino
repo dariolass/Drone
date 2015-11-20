@@ -43,8 +43,8 @@ Servo motor4;
 boolean checkForSyncMarker();
 void    readRazor();
 void    computePID();
+void    initializeRazor();
 
-boolean PIDModeAutomatic = false;
 //Define Variables we'll be connecting to
 double PIDSetpoint, PIDInput, PIDOutput;
 
@@ -55,9 +55,10 @@ float rollPIDResult   = 0;
 
 // -------------------------- IMPLEMENTATION --------------------------
 
-void setup() {
+void setup() // ----- S E T U P
+{
   Serial.begin(9600);
-  Serial1.begin(9600); //Wireless Communication serial port
+  Serial1.begin(9600);  //Wireless Communication serial port
   Serial2.begin(57600); //Sensor Communication serial port
 
   pitch = 0;
@@ -70,28 +71,24 @@ void setup() {
   motor3.attach(MOTOR_PIN_3);
   motor4.attach(MOTOR_PIN_4);
 
-  delay(3000);  // 3 seconds should be enough
-  
-  // Set Razor output parameters
-  Serial2.write("#ob");  // Turn on binary output
-  Serial2.write("#o1");  // Turn on continuous streaming output
-  Serial2.write("#oe0"); // Disable error message output
-  
-  // Synch with Razor
-  //Serial2.clear();  // Clear input buffer up to here
-  Serial2.write("#s00");  // Request synch token
+  delay(2000);  // 2 seconds should be enough
 
+  //FIX: move this to its own setup function
   Serial1.write("COMM READY\n");
+
+  //this should block the setup loop until the sync token is received
+  initializeRazor();
 
   //Setup PID
   PIDInput = 0;
   PIDSetpoint = 0;
   myPID.SetMode(AUTOMATIC);
   myPID.SetOutputLimits(-500.0, 500.0);
-  myPID.SetSampleTime(10);
+  myPID.SetSampleTime(5);
 }
 
-void loop() {
+void loop() // ----- L O O P
+{
   while (Serial1.available() > 0) { // reading WIRELESS SERIAL comm
     int integer1 = Serial1.parseInt(); 
     int integer2 = Serial1.parseInt(); 
@@ -105,37 +102,16 @@ void loop() {
     }
   }
 
-  if (!razorInSync) {
-    razorInSync = checkForSyncMarker();
-  } else {
-    readRazor();
-    computePID();
-  }
+  // computePID();
+}
+
+void initializeRazor 
+{
   
-  int thrust2 = map(throttle+pitchPIDResult,0,2000,1100,1800);
-  int thrust4 = map(throttle-pitchPIDResult,0,2000,1100,1800);
-  Serial.print(thrust2);
-  Serial.print("\t");
-  Serial.println(thrust4);
-  //motor1.writeMicroseconds();
- // motor2.writeMicroseconds(thrust2);
-  //motor3.writeMicroseconds();
-  //motor4.writeMicroseconds(thrust4);
 }
 
-boolean checkForSyncMarker() {
-  String marker = "#SYNCH00\r\n";
-  if (Serial2.available() < marker.length()) 
-    return false;
-  for (int i = 0; i < marker.length(); i++) {
-  if (Serial2.read() != marker.charAt(i))
-    return false;
-  }
-  Serial.println("Razor is in sync!");
-  return true;
-}
-
-void readRazor() {
+void readRazor() 
+{
   if (Serial2.available() >= 12) {
     byte yawData[4];
     yawData[0] = Serial2.read();
@@ -158,7 +134,10 @@ void readRazor() {
   }
 }
 
-void computePID() {
+void computePID() 
+{
+  //PID calculation for ONE axis
+  Serial.print("Computing PID");
   //Pitch PID
   PIDInput = pitchAngle;
   PIDSetpoint = 1;
@@ -167,12 +146,5 @@ void computePID() {
   myPID.Compute();
   Serial.println(PIDOutput);
   pitchPIDResult = PIDOutput;
-  
-  
-//  //Roll PID
-//  PIDInput = rollAngle;
-//  PIDSetpoint = 0;
-//  myPID.Compute();
-//  rollPIDResult = PIDOutput;
 }
 

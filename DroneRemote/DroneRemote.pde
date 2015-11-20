@@ -19,7 +19,7 @@ void setup() {
   inBuffer = "";
   textSize(14);
   inBuffer = "NO MESSAGE";
-
+  serialPort = new Serial(this, "/dev/tty.usbserial-AL016UPG", 9600);
 }
 
 void draw() {
@@ -37,7 +37,7 @@ void draw() {
    int ix = i - 400;
    line(400, ix, 800, ix);
   }
-  while (serialPort.available() > 0) {
+  while (serialPort.available() > 10) {
    inBuffer = serialPort.readString(); 
   }
 }
