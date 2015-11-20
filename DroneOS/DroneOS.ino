@@ -14,6 +14,9 @@ int roll;         // rotation along axis with rotors 2 & 4
 int yaw;          //central rotation around core
 int throttle;     //throttle
 
+float pitchPIDResult  = 0;
+float rollPIDResult   = 0;
+
 //---- MATH VARs --------------------
 #define BASE_NUMBER_MIN 0
 #define BASE_NUMBER_MAX 2000
@@ -40,9 +43,14 @@ Servo motor3;
 Servo motor4;
 
 //---- FUNCTION DECLARATION ---------
-void    readRazor();
-void    computePID();
 void    initializeRazor();
+void    initializeWireless();
+void    initializePID();
+
+void    readRazor();
+void    readWireless();
+void    computePID();
+
 boolean readToken(String token);
 
 // -------------------------- IMPLEMENTATION --------------------------
@@ -63,38 +71,20 @@ void setup() // ----- S E T U P
   motor3.attach(MOTOR_PIN_3);
   motor4.attach(MOTOR_PIN_4);
 
-  delay(2000);  // 2 seconds should be enough
-
-  //FIX: move this to its own setup function
-  Serial1.write("COMM READY\n");
+  delay(2000);  // 2 seconds idle time for sensors and comm to get ready
   
-  //this should block the setup loop until the sync token is received
+  //initialize IMU, wireless comm, and PID
   initializeRazor();
-
-  //Setup PID
-  PIDInput = 0;
-  PIDSetpoint = 0;
-  myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-500.0, 500.0);
-  myPID.SetSampleTime(10);
+  initializeWireless();
+  initializePID();
 }
 
 void loop() // ----- L O O P
 {
-  while (Serial1.available() > 0) { // reading WIRELESS SERIAL comm
-    int integer1 = Serial1.parseInt(); 
-    int integer2 = Serial1.parseInt(); 
-    int integer3 = Serial1.parseInt(); 
-    int integer4 = Serial1.parseInt();
-    if (Serial1.read() == '\n') {
-      pitch = integer1;
-      roll = integer2;
-      yaw = integer3;
-      throttle = integer4;
-    }
-  }
-
+  
   readRazor();
-
-  // computePID();
+  readWireless();
+  computePID();
+  
+  //Serial.println(pitchAngle);
 }

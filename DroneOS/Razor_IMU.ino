@@ -12,12 +12,11 @@ void initializeRazor()
     Serial2.readBytes(dump, bufferSize);
   }
   
-  Serial2.write("#s00");  // Request synch token
+  Serial2.write("#s00");  // Request sync token
 
   while (!razorInSync) {
     razorInSync = readToken("#SYNCH00\r\n");
   }
-  
   if (razorInSync) Serial.print("Razor In Sync!");
 }
 
