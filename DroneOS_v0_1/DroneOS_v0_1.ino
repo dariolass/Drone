@@ -12,7 +12,7 @@ boolean razorInSync = false;
 int pitch;        // rotation along axis with rotors 1 & 3
 int roll;         // rotation along axis with rotors 2 & 4
 int yaw;          //central rotation around core
-int throttle;     //overall thrust distributed to rotors
+int throttle;     //throttle
 
 //---- MATH VARs --------------------
 #define BASE_NUMBER_MIN 0
@@ -40,10 +40,10 @@ Servo motor3;
 Servo motor4;
 
 //---- FUNCTION DECLARATION ---------
-boolean checkForSyncMarker();
 void    readRazor();
 void    computePID();
 void    initializeRazor();
+boolean readToken(String token);
 
 //Define Variables we'll be connecting to
 double PIDSetpoint, PIDInput, PIDOutput;
@@ -75,7 +75,7 @@ void setup() // ----- S E T U P
 
   //FIX: move this to its own setup function
   Serial1.write("COMM READY\n");
-
+  
   //this should block the setup loop until the sync token is received
   initializeRazor();
 
@@ -84,7 +84,7 @@ void setup() // ----- S E T U P
   PIDSetpoint = 0;
   myPID.SetMode(AUTOMATIC);
   myPID.SetOutputLimits(-500.0, 500.0);
-  myPID.SetSampleTime(5);
+  myPID.SetSampleTime(10);
 }
 
 void loop() // ----- L O O P
@@ -102,12 +102,47 @@ void loop() // ----- L O O P
     }
   }
 
+  readRazor();
+
   // computePID();
 }
 
-void initializeRazor 
+void initializeRazor()
 {
+  // Set Razor output parameters
+  Serial2.write("#ob");  // Turn on binary output
+  Serial2.write("#o1");  // Turn on continuous streaming output
+  Serial2.write("#oe0"); // Disable error message output
   
+  // Clear input buffer up to here
+  int bufferSize = Serial2.available();
+  if (bufferSize > 0) {
+    byte dump[bufferSize];
+    Serial2.readBytes(dump, bufferSize);
+  }
+  
+  Serial2.write("#s00");  // Request synch token
+
+  while (!razorInSync) {
+    razorInSync = readToken("#SYNCH00\r\n");
+  }
+  
+  if (razorInSync) Serial.print("Razor In Sync!");
+}
+
+boolean readToken(String token) 
+{
+  // Wait until enough bytes are available
+  if (Serial2.available() < token.length())
+    return false;
+  
+  // Check if incoming bytes match token
+  for (int i = 0; i < token.length(); i++) {
+    if (Serial2.read() != token.charAt(i))
+      return false;
+  }
+  
+  return true;
 }
 
 void readRazor() 
