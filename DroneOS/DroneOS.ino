@@ -21,7 +21,7 @@ float rollPIDResult   = 0;
 #define BASE_NUMBER_MIN 0
 #define BASE_NUMBER_MAX 2000
 
-#define MICROS_NUMBER_MIN 1100
+#define MICROS_NUMBER_MIN 1000
 #define MICROS_NUMBER_MAX 1900
 
 //---- SENSOR VARs ------------------
@@ -85,6 +85,21 @@ void loop() // ----- L O O P
   readRazor();
   readWireless();
   computePID();
+
+  int motor2Thrust = throttle + pitchPIDResult;
+  motor2Thrust = map(motor2Thrust, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor2Thrust = constrain(motor2Thrust, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor2.writeMicroseconds(motor2Thrust);
   
-  //Serial.println(pitchAngle);
+  int motor4Thrust = throttle - pitchPIDResult;
+  motor4Thrust = map(motor4Thrust, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor4Thrust = constrain(motor4Thrust, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor4.writeMicroseconds(motor4Thrust);
+
+  motor1.writeMicroseconds(MICROS_NUMBER_MIN);
+  motor3.writeMicroseconds(MICROS_NUMBER_MIN);
+  
+  Serial.print(motor2Thrust);
+  Serial.print('\t');
+  Serial.println(motor4Thrust);
 }

@@ -17,10 +17,10 @@ void computePID()
   //Pitch PID
   PIDInput = pitchAngle;
   PIDSetpoint = 1;
-  Serial.print(PIDInput);
-  Serial.print('\t');
+//  Serial.print(PIDInput);
+//  Serial.print('\t');
   myPID.Compute();
-  Serial.println(PIDOutput);
+//  Serial.println(PIDOutput);
   pitchPIDResult = PIDOutput;
 }
 
