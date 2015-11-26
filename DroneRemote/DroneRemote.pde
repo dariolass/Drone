@@ -44,11 +44,11 @@ void draw() {
 
 void keyPressed() {
   if (key == 'a') {
-    throttle -= 10;
+    throttle -= 50;
   } else if (key == 'w' && throttle <= 2000) {
-    throttle += 10;
+    throttle += 50;
   } else if (key == '0') {
-    throttle = 0;
+    throttle = -400;
   } else {
     return;
   }
