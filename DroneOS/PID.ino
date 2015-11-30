@@ -1,26 +1,32 @@
-double PIDSetpoint, PIDInput, PIDOutput;
-PID myPID(&PIDInput, &PIDOutput, &PIDSetpoint, 5.0, 5.0, 1.0, DIRECT);
+double pitchPIDSetpoint, pitchPIDInput, pitchPIDOutput;
+PID pitchPID(&pitchPIDInput, &pitchPIDOutput, &pitchPIDSetpoint, 1.7, 0.2, 0.6, DIRECT);
+
+double rollPIDSetpoint, rollPIDInput, rollPIDOutput;
+PID rollPID(&rollPIDInput, &rollPIDOutput, &rollPIDSetpoint, 1.7, 0.2, 0.6, DIRECT);
 
 void initializePID()
 {
   //Setup PID
-  PIDInput = 0;
-  PIDSetpoint = 0;
-  myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-500.0, 500.0);
-  myPID.SetSampleTime(10);
-}
+  pitchPIDInput = 0;
+  pitchPIDSetpoint = 0;
+  pitchPID.SetMode(AUTOMATIC);
+  pitchPID.SetOutputLimits(-500.0, 500.0);
+  pitchPID.SetSampleTime(5);
 
+  rollPIDInput = 0;
+  rollPIDSetpoint = 0;
+  rollPID.SetMode(AUTOMATIC);
+  rollPID.SetOutputLimits(-500.0, 500.0);
+  rollPID.SetSampleTime(5);
+}
 void computePID() 
 {
-  //PID calculation for ONE axis
-  //Pitch PID
-  PIDInput = pitchAngle;
-  PIDSetpoint = 1;
-//  Serial.print(PIDInput);
-//  Serial.print('\t');
-  myPID.Compute();
-//  Serial.println(PIDOutput);
-  pitchPIDResult = PIDOutput;
+  pitchPIDInput = pitchAngle;
+  pitchPID.Compute();
+  pitchPIDResult = pitchPIDOutput;
+
+  rollPIDInput = rollAngle;
+  rollPID.Compute();
+  rollPIDResult = rollPIDOutput;
 }
 

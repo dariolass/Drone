@@ -8,6 +8,8 @@
 boolean readyMessageSent = false;
 boolean razorInSync = false;
 
+int loopCount = 0;
+
 //--- FLIGHT  CONTROL VARs ----------
 int pitch;        // rotation along axis with rotors 1 & 3
 int roll;         // rotation along axis with rotors 2 & 4
@@ -66,22 +68,21 @@ void setup() // ----- S E T U P
   yaw = 0;
   throttle = 0;
 
-  motor1.attach(MOTOR_PIN_1);
-  motor2.attach(MOTOR_PIN_2);
-  motor3.attach(MOTOR_PIN_3);
-  motor4.attach(MOTOR_PIN_4);
-
   delay(2000);  // 2 seconds idle time for sensors and comm to get ready
   
   //initialize IMU, wireless comm, and PID
   initializeRazor();
   initializeWireless();
   initializePID();
+
+  motor1.attach(MOTOR_PIN_1);
+  motor2.attach(MOTOR_PIN_2);
+  motor3.attach(MOTOR_PIN_3);
+  motor4.attach(MOTOR_PIN_4);
 }
 
 void loop() // ----- L O O P
 {
-  
   readRazor();
   readWireless();
   computePID();
@@ -96,10 +97,17 @@ void loop() // ----- L O O P
   motor4Thrust = constrain(motor4Thrust, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
   motor4.writeMicroseconds(motor4Thrust);
 
-  motor1.writeMicroseconds(MICROS_NUMBER_MIN);
-  motor3.writeMicroseconds(MICROS_NUMBER_MIN);
+  int motor1Thrust = throttle + rollPIDResult;
+  motor1Thrust = map(motor1Thrust, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor1Thrust = constrain(motor1Thrust, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor1.writeMicroseconds(motor1Thrust);
+  
+  int motor3Thrust = throttle - rollPIDResult;
+  motor3Thrust = map(motor3Thrust, BASE_NUMBER_MIN, BASE_NUMBER_MAX, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor3Thrust = constrain(motor3Thrust, MICROS_NUMBER_MIN, MICROS_NUMBER_MAX);
+  motor3.writeMicroseconds(motor3Thrust);
   
   Serial.print(motor2Thrust);
   Serial.print('\t');
-  Serial.println(motor4Thrust);
+  Serial.println(pitchPIDResult);
 }
