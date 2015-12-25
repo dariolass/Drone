@@ -14,7 +14,7 @@ int loopCount = 0;
 int pitch;        // rotation along axis with rotors 1 & 3
 int roll;         // rotation along axis with rotors 2 & 4
 int yaw;          //central rotation around core
-int throttle;     //throttle
+int throttle;
 
 float pitchPIDResult  = 0;
 float rollPIDResult   = 0;

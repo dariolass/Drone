@@ -1,9 +1,17 @@
-void setup() {
-  // put your setup code here, to run once:
+int gyroX;
+int gyroY;
+int gyroZ;
 
+int accX;
+int accY;
+int accZ;
+
+void setup() {
+  Serial.begin(57600);
+  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
 
 }
